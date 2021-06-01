@@ -1,12 +1,42 @@
-// All of the Node.js APIs are available in the preload process.
-// It has the same sandbox as a Chrome extension.
-window.addEventListener('DOMContentLoaded', () => {
-  const replaceText = (selector, text) => {
-    const element = document.getElementById(selector)
-    if (element) element.innerText = text
-  }
+const { contextBridge, ipcRenderer } = require( 'electron' )
 
-  for (const type of ['chrome', 'node', 'electron']) {
-    replaceText(`${type}-version`, process.versions[type])
-  }
-})
+//	PLATFORM
+
+contextBridge.exposeInMainWorld(
+	'onPlatform'
+,	( ...$ ) => ipcRenderer.on( 'platform', ...$ )
+)
+
+//	MESSAGE BOX
+
+contextBridge.exposeInMainWorld(
+	'invokeMessageBox'
+,	( ...$ ) => ipcRenderer.invoke( 'messageBox', ...$ )
+)
+
+//	ERROR BOX
+
+contextBridge.exposeInMainWorld(
+	'sendErrorBox'
+,	( ...$ ) => ipcRenderer.send( 'errorBox', ...$ )
+)
+
+//	MENU
+
+contextBridge.exposeInMainWorld(
+	'onMenu'
+,	( ...$ ) => ipcRenderer.on( 'menu', ...$ )
+)
+
+//	CLIPBOARD
+
+contextBridge.exposeInMainWorld(
+	'sendClipboard'
+,	( ...$ ) => ipcRenderer.send( 'clipboard', ...$ )
+)
+
+contextBridge.exposeInMainWorld(
+	'invokeClipboard'
+,	( ...$ ) => ipcRenderer.invoke( 'clipboard', ...$ )
+)
+

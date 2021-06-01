@@ -1,6 +1,32 @@
-// This file is required by the index.html file and will
-// be executed in the renderer process for that window.
-// No Node.js APIs are available in this process because
-// `nodeIntegration` is turned off. Use `preload.js` to
-// selectively enable features needed in the rendering
-// process.
+const
+Log = $ => Footer.textContent = $
+
+MessageBoxB.onclick = () => (
+	Log( 'MessageBox:' )
+,	window.invokeMessageBox(
+		{	type:		MessageBoxType.value
+		,	message:	MessageBoxText.value
+		,	buttons:	JSON.parse( MessageBoxButtons.value )
+		}
+	).then( $ => Log( 'MessageBox: Button #' + $ + ' is Clicked' ) )
+)
+
+ErrorBoxB.onclick = () => (
+	Log( 'ErrorBox:' )
+,	window.sendErrorBox( ErrorBoxTitle.value, ErrorBoxText.value )
+)
+
+AlertB.onclick = () => (
+	Log( 'Alert:' )
+,	window.alert( AlertText.value )
+)
+
+SendClipboardB.onclick = () => {
+	window.sendClipboard( ClipboardText.value )
+}
+
+InvokeClipboardB.onclick = async () => {
+	ClipboardText.value = await window.invokeClipboard()
+}
+
+window.onPlatform( ( _, $ ) => Log( 'Platform:' + $ ) )
