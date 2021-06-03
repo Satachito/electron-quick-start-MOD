@@ -1,10 +1,10 @@
 const { contextBridge, ipcRenderer } = require( 'electron' )
 
-//	PLATFORM
+//	PROCESS
 
 contextBridge.exposeInMainWorld(
-	'onPlatform'
-,	( ...$ ) => ipcRenderer.on( 'platform', ...$ )
+	'invokePlatform'
+,	( ...$ ) => ipcRenderer.invoke( 'platform', ...$ )
 )
 
 //	MESSAGE BOX
@@ -39,4 +39,22 @@ contextBridge.exposeInMainWorld(
 	'invokeClipboard'
 ,	( ...$ ) => ipcRenderer.invoke( 'clipboard', ...$ )
 )
+
+//	APPLICATION
+
+contextBridge.exposeInMainWorld(
+	'onData'
+,	( ...$ ) => ipcRenderer.on( 'data', ...$ )
+)
+
+contextBridge.exposeInMainWorld(
+	'sendSave'
+,	( ...$ ) => ipcRenderer.send( 'save', ...$ )
+)
+
+contextBridge.exposeInMainWorld(
+	'sendSaveAs'
+,	( ...$ ) => ipcRenderer.send( 'saveAs', ...$ )
+)
+
 

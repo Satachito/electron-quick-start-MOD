@@ -2,38 +2,50 @@ const
 { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog, clipboard } = require( 'electron' )
 
 const
-path = require( 'path' )
-
-const
 isMac = process.platform === 'darwin'
 const
 isWin = process.platform === 'win32'
 
 const
-createWindow = () => {
+Send = ( ...$ ) => {
+	const _ = BrowserWindow.getFocusedWindow()
+	_ && _.send( ...$ )
+}
+
+const
+SendMenu = ( ...$ ) => {
+	Send( 'menu', ...$ )
+}
+
+const
+createWindow = file => {
 
 	const 
 	$ = new BrowserWindow(
 		{	width			: 1600
 		,	height			: 800
-		,	title			: 'untitled'
+		,	title			: file ? file : 'untitled'
 		,	webPreferences	: {
-				preload		: path.join( __dirname, 'preload.js' )
+				preload		: require( 'path' ).join( __dirname, 'preload.js' )
+			,	file
 			}
 		}
 	)
 	$.loadFile( 'index.html' )
 	$.webContents.openDevTools()
-	$.webContents.on(
+	file && $.webContents.on(
 		'did-finish-load'
-	,	() => $.send( 'platform', process.platform )
+	,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ) )
 	)
 }
+
 
 //app.commandLine.appendSwitch( 'js-flags', '--max-old-space-size=4096' )
 app.whenReady().then(
 	() => {
+
 		createWindow()
+
 		app.on(
 			'activate'
 		,	( event, hasVisibleWindows ) => hasVisibleWindows || createWindow()
@@ -42,6 +54,7 @@ app.whenReady().then(
 			'window-all-closed'
 		,	() => isMac || app.quit()
 		)
+
 		console.log(
 			process.argv.slice(
 				isWin
@@ -49,7 +62,79 @@ app.whenReady().then(
 				:	process.argv[ 0 ].split( '/' ).pop()	== 'Electron'		? 2 : 1
 			)
 		)
+
+		const
+		fileMenu = Menu.getApplicationMenu().items.filter( $ => $.role === 'filemenu' )[ 0 ].submenu
+
+		fileMenu.insert(
+			0
+		,	new MenuItem( 
+				{	label		: 'Save as...'
+				,	click		: ev => SendMenu( 'SaveAs' )
+				}
+			)
+		)
+		fileMenu.insert(
+			0
+		,	new MenuItem( 
+				{	label		: 'Save'
+				,	accelerator	: isMac ? 'Cmd+S' : 'Ctl+S'
+				,	click		: ev => SendMenu( 'Save' )
+				}
+			)
+		)
+		fileMenu.insert( 0, new MenuItem( {	type: 'separator' } ) )
+		fileMenu.insert(
+			0
+		,	new MenuItem( 
+				{	label		: 'Open...'
+				,	accelerator	: isMac ? 'Cmd+O' : 'Ctl+O'
+				,	click		: ev => {
+						const _ = dialog.showOpenDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
+						_ && _.forEach( $ => createWindow( $ ) )
+					}
+				}
+			)
+		)
+		fileMenu.insert(
+			0
+		,	new MenuItem( 
+				{	label		: 'New'
+				,	accelerator	: isMac ? 'Cmd+N' : 'Ctl+N'
+				,	click		: ev => createWindow()
+				}
+			)
+		)
+		Menu.setApplicationMenu( Menu.getApplicationMenu() )
 	}
+)
+
+const
+SaveAs = ( ev, $ ) => {
+	const _ = dialog.showSaveDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
+	_ && (
+		require( 'fs' ).writeFileSync( _, $ )
+	,	ev.sender.browserWindowOptions.webPreferences.file = _
+	,	BrowserWindow.getFocusedWindow().title = _
+	)
+}
+ipcMain.on(
+	'saveAs'
+,	( ev, $ ) => SaveAs( ev, $ )
+)
+ipcMain.on(
+	'save'
+,	( ev, $ ) => {
+		const file = ev.sender.browserWindowOptions.webPreferences.file
+		file
+		?	require( 'fs' ).writeFileSync( file, $ )
+		:	SaveAs( ev, $ )
+	}
+)
+
+ipcMain.handle(
+	'platform'
+,	( ev, ...$ ) => process.platform
 )
 
 ipcMain.on(
@@ -71,18 +156,4 @@ ipcMain.on(
 	'errorBox'
 ,	( ev, ...$ ) => dialog.showErrorBox( ...$ )
 )
-
-/*
-	Menu.setApplicationMenu( Menu.buildFromTemplate( Template() ) )
-const
-Template = () => [
-	{ role	: 'appMenu' }
-,	{ role	: 'fileMenu' }
-,	{ role	: 'editMenu' }
-,	{ role	: 'viewMenu' }
-,	{ role	: 'windowMenu' }
-,	{ role	: 'help' }
-]
-*/
-
 

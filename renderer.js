@@ -1,5 +1,8 @@
 const
-Log = $ => Footer.textContent = $
+Q = $ => document.querySelector( $ )
+
+const
+Log = $ => Q( 'footer' ).textContent = $
 
 MessageBoxB.onclick = () => (
 	Log( 'MessageBox:' )
@@ -29,4 +32,20 @@ InvokeClipboardB.onclick = async () => {
 	ClipboardText.value = await window.invokeClipboard()
 }
 
-window.onPlatform( ( _, $ ) => Log( 'Platform:' + $ ) )
+window.invokePlatform().then( $ => Log( 'Platform:' + $ ) )
+
+window.onData( ( _, $ ) => Q( 'textarea' ).value = $ )
+
+window.onMenu(
+	( _, $ ) => {
+		switch ( $ ) {
+		case 'Save':
+			window.sendSave( Q( 'textarea' ).value )
+			break
+		case 'SaveAs':
+			window.sendSaveAs( Q( 'textarea' ).value )
+			break
+		}
+	}
+)
+

@@ -33,9 +33,11 @@ aside {
 
 </style>
 
-<header id=Header>HEADER</header>
+<header>HEADER</header>
 <nav>
-	<br>MessageBox は Main Process で出します。<br>
+	<br>
+	Invoke dialog.showMessageBoxSync() in Main Process.
+	<br>
 	<select	id=MessageBoxType>
 		<option value=info				>Info	</option>
 		<option value=warning			>Warning</option>
@@ -47,10 +49,9 @@ aside {
 	<br>
 	<input	id=MessageBoxB	type=button	value="Click to show message box." />
 	<br>
-	<br>MessageBox が独立するか Window に着くかはプログラム次第です。
 
 	<br>
-	<br>ErrorBox は Main Process で出します。
+	Invoke dialog.showErrorBox() in Main Process.
 	<br>
 	<input	id=ErrorBoxTitle			value="ERROR BOX Title"/>
 	<br>
@@ -58,25 +59,31 @@ aside {
 	<br>
 	<input	id=ErrorBoxB	type=button	value="Click to show error box." />
 	<br>
-	<br>ErrorBox は 独立しています。<br>
+	ErrorBox is independent.
+	<br>
 
 	<br>
-	<br>Alert は Renderer Process で出します。
+	Invoke window.alert() in Renderer Process.
 	<br>
 	<input	id=AlertText				value="ALERT TEXT"/>
 	<br>
 	<input	id=AlertB		type=button	value="Click to show alert." />
-	<br>Alert は Window についています。<br>
+	<br>
+	Alert belong to parent window.
+	<br>
+
 </nav>
-<textarea style="resize: none">ABCDEFG</textarea>
+<textarea style="resize: none">
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+</textarea>
 <aside>
-	<input	id=ClipboardText			value="CLIPBOARD TEXT"/>
+	<input	id=ClipboardText				value="CLIPBOARD TEXT"/>
 	<br>
 	<input	id=SendClipboardB	type=button	value="Click to copy to clipboard" />
 	<br>
 	<input	id=InvokeClipboardB	type=button	value="Click to copy from clipboard" />
 	<br>
 </aside>
-<footer id=Footer>FOOTER</footer>
+<footer>FOOTER</footer>
 
 <script src="./renderer.js"></script>
