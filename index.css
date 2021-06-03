@@ -1,0 +1,28 @@
+body {
+;	height					: 100vh
+;	margin					: 0
+;	display					: grid
+;	grid-template-rows		: auto 1fr auto
+;	grid-template-columns	: auto 1fr auto
+}
+
+header, footer {
+;	grid-column				: 1 / 4
+;	background-color		: pink
+}
+
+nav {
+;	width					: 256px
+;	background-color		: lightgreen
+;	overflow				: scroll
+}
+
+aside {
+;	width					: 256px
+;	background-color		: lightgreen
+}
+
+textarea {
+;	resize					: none
+}
+

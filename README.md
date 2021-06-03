@@ -1,4 +1,13 @@
-# electron-quick-start
+# electron-quick-start-MOD
+
+This is a modification of Electron's electron-quick-start repository which includes sample codes for:
+
+* Typical application using holy grail layout.
+* IPC.
+* Menu handling.
+* Access to process.platform. ( mac, win ... )
+* Clipboard handling.
+
 
 **Clone and run for a quick way to see Electron in action.**
 
@@ -20,9 +29,9 @@ To clone and run this repository you'll need [Git](https://git-scm.com) and [Nod
 
 ```bash
 # Clone this repository
-git clone https://github.com/electron/electron-quick-start
+git clone https://github.com/Satachito/electron-quick-start-MOD
 # Go into the repository
-cd electron-quick-start
+cd electron-quick-start-MOD
 # Install dependencies
 npm install
 # Run the app
