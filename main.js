@@ -13,9 +13,7 @@ Send = ( ...$ ) => {
 }
 
 const
-SendMenu = ( ...$ ) => {
-	Send( 'menu', ...$ )
-}
+SendMenu = ( ...$ ) => Send( 'menu', ...$ )
 
 const
 createWindow = file => {
@@ -31,12 +29,14 @@ createWindow = file => {
 			}
 		}
 	)
+
 	$.loadFile( 'index.html' )
-	$.webContents.openDevTools()
 	file && $.webContents.on(
 		'did-finish-load'
 	,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ) )
 	)
+
+	$.webContents.openDevTools()
 }
 
 
