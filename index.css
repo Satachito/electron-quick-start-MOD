@@ -6,23 +6,32 @@ body {
 ;	grid-template-columns	: auto 1fr auto
 }
 
-header, footer {
+header {
+;	border-bottom			: 1px solid black
 ;	grid-column				: 1 / 4
-;	background-color		: pink
+}
+
+footer {
+;	border-top				: 1px solid black
+;	grid-column				: 1 / 4
 }
 
 nav {
+;	border-right			: 1px solid black
 ;	width					: 256px
-;	background-color		: lightgreen
 ;	overflow				: scroll
+;	padding					: 8px
 }
 
 aside {
+;	border-left				: 1px solid black
 ;	width					: 256px
-;	background-color		: lightgreen
+;	overflow				: scroll
+;	padding					: 8px
 }
 
 textarea {
 ;	resize					: none
+;	border					: none
 }
 
