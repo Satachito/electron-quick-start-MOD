@@ -55,17 +55,9 @@ app.whenReady().then(
 		,	() => isMac || app.quit()
 		)
 
-		console.log(
-			process.argv.slice(
-				isWin
-				?	process.argv[ 0 ].split( '\\' ).pop()	== 'electron.exe'	? 2 : 1
-				:	process.argv[ 0 ].split( '/' ).pop()	== 'Electron'		? 2 : 1
-			)
-		)
-
 		const
 		menu = Menu.buildFromTemplate(
-			[	{ role: 'appmenu'		}
+			[	...isMac ? [ { role: 'appmenu' } ] : []
 			,	{ role: 'filemenu'		}
 			,	{ role: 'editmenu'		}
 			,	{ role: 'viewmenu'		}
