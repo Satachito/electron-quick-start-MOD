@@ -127,10 +127,7 @@ SaveAs = ( ev, $ ) => {
 	,	BrowserWindow.getFocusedWindow().title = _
 	)
 }
-ipcMain.on(
-	'saveAs'
-,	( ev, $ ) => SaveAs( ev, $ )
-)
+ipcMain.on( 'saveAs', SaveAs )
 ipcMain.on(
 	'save'
 ,	( ev, $ ) => {
