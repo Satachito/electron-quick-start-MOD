@@ -62,7 +62,9 @@ app.whenReady().then(
 			,	{ role: 'editmenu'		}
 			,	{ role: 'viewmenu'		}
 			,	{ role: 'windowmenu'	}
-			,	{ role: 'help'			}
+			,	{	role: 'help'
+				,	submenu: []
+				}
 			,	{	label: 'Extra'
 				,	submenu: []
 				}
