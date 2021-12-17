@@ -64,7 +64,25 @@ app.whenReady().then(
 		)
 
 		const
-		fileMenu = Menu.getApplicationMenu().items.filter( $ => $.role === 'filemenu' )[ 0 ].submenu
+		menu = Menu.buildFromTemplate(
+			[	{ role: 'appmenu'		}
+			,	{ role: 'filemenu'		}
+			,	{ role: 'editmenu'		}
+			,	{ role: 'viewmenu'		}
+			,	{ role: 'windowmenu'	}
+			,	{ role: 'help'			}
+			,	{	label: 'Extra'
+				,	submenu: []
+				}
+			]
+		)
+
+		const
+		extraMenu = menu.items.find( $ => $.label === 'Extra' ).submenu
+		extraMenu.insert( 0, new MenuItem( { label: 'ExtraMenuItem' } ) )
+
+		const
+		fileMenu = menu.items.find( $ => $.role === 'filemenu' ).submenu
 
 		fileMenu.insert(
 			0
@@ -105,7 +123,7 @@ app.whenReady().then(
 				}
 			)
 		)
-		Menu.setApplicationMenu( Menu.getApplicationMenu() )
+		Menu.setApplicationMenu( menu )
 	}
 )
 
