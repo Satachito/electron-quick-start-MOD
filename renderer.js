@@ -31,19 +31,46 @@ InvokeClipboardB.onclick = async () => {
 
 TextArea.oncontextmenu = () => ipcRenderer.send( 'sampleContextMenu' )
 
-onData( ( _, $ ) => TextArea.value = $ )
+let
+prevData = TextArea.value
+
+onData(
+	( _, $, file ) => (
+		prevData = $
+	,	TextArea.value = $
+	,	document.title = file
+	)
+)
 
 onMenu(
-	( _, $ ) => {
+	async ( _, $ ) => {
 		console.log( $ )
+
+		const
+		_Save = async _ => {
+			const $ = await ipcRenderer.invoke( _, TextArea.value )
+			$ 
+			?	(	originalData = TextArea.value
+				,	document.title = $
+				)
+			:	console.log( 'Save canceled' )
+		}
+
 		switch ( $ ) {
 		case 'Save':
-			ipcRenderer.send( 'save', TextArea.value )
+			_Save( 'save' )
 			break
 		case 'SaveAs':
-			ipcRenderer.send( 'saveAs', TextArea.value )
+			_Save( 'saveAs' )
 			break
 		}
 	}
 )
+
+onbeforeunload = ev => TextArea.value != prevData
+?	(	ev.preventDefault()
+	,	ev.returnValue = ''	// for Chrome/Electron
+	,	console.log( 'DIRTY' )
+	)
+:	undefined
 

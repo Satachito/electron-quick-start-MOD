@@ -7,3 +7,5 @@ This is a modification of Electron's electron-quick-start repository which inclu
 * Menu handling.
 * Access to process.platform. ( mac, win ... )
 * Clipboard handling.
+
+----------------

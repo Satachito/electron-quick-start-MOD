@@ -2,11 +2,6 @@ const
 { app, BrowserWindow, Menu, MenuItem, ipcMain, dialog, clipboard } = require( 'electron' )
 
 const
-isMac = process.platform === 'darwin'
-const
-isWin = process.platform === 'win32'
-
-const
 Send = ( ...$ ) => {
 	const _ = BrowserWindow.getFocusedWindow()
 	_ && _.send( ...$ )
@@ -22,7 +17,6 @@ createWindow = file => {
 	$ = new BrowserWindow(
 		{	width			: 1600
 		,	height			: 800
-		,	title			: file ? file : 'untitled'
 		,	webPreferences	: {
 				preload		: require( 'path' ).join( __dirname, 'preload.js' )
 			}
@@ -31,30 +25,48 @@ createWindow = file => {
 
 	$.loadFile( 'index.html' )
 	file && (
-		$.on(
-			'ready-to-show'
-		,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ) )
+		$.webContents.on(
+			'did-finish-load'
+		,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ), file )
 		)
 	,	$.webContents.file = file
 	)
 	$.webContents.openDevTools()
+
+	$.webContents.on(
+		'will-prevent-unload'
+	,	ev => dialog.showMessageBoxSync(
+			$
+		,	{	type: 'question'
+			,	buttons: [ 'Discard change and close', 'No' ]
+			,	message: 'Do you really want to close this window?\nChanges you made may not be saved.'
+			}
+		) === 0 && ev.preventDefault()
+	)
 }
 
 const
 SaveAs = ( ev, $ ) => {
-	const _ = dialog.showSaveDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
-	_ && (
-		require( 'fs' ).writeFileSync( _, $ )
-	,	ev.sender.file = _
+	const file = dialog.showSaveDialogSync(
+		{	properties	: [ 'openFile', 'openDirectory' ]
+		,	defaultPath	: ev.sender.file
+		}
 	)
+	file && (
+		require( 'fs' ).writeFileSync( file, $ )
+	,	ev.sender.file = file
+	)
+	return file
 }
-ipcMain.on( 'saveAs', SaveAs )
-ipcMain.on(
+ipcMain.handle( 'saveAs', SaveAs )
+ipcMain.handle(
 	'save'
 ,	( ev, $ ) => {
 		const file = ev.sender.file
-		file
-		?	require( 'fs' ).writeFileSync( file, $ )
+		return file
+		?	(	require( 'fs' ).writeFileSync( file, $ )
+			,	file
+			)
 		:	SaveAs( ev, $ )
 	}
 )
@@ -90,6 +102,9 @@ ipcMain.on(
 	}
 )
 
+
+const
+isMac = process.platform === 'darwin'
 
 //app.commandLine.appendSwitch( 'js-flags', '--max-old-space-size=4096' )
 app.whenReady().then(
@@ -138,7 +153,7 @@ app.whenReady().then(
 			0
 		,	new MenuItem( 
 				{	label		: 'Save'
-				,	accelerator	: isMac ? 'Cmd+S' : 'Ctl+S'
+				,	accelerator	: 'CmdOrCtrl+S'
 				,	click		: ev => SendMenu( 'Save' )
 				}
 			)
@@ -148,7 +163,7 @@ app.whenReady().then(
 			0
 		,	new MenuItem( 
 				{	label		: 'Open...'
-				,	accelerator	: isMac ? 'Cmd+O' : 'Ctl+O'
+				,	accelerator	: 'CmdOrCtrl+O'
 				,	click		: ev => {
 						const _ = dialog.showOpenDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
 						_ && _.forEach( $ => createWindow( $ ) )
@@ -160,7 +175,7 @@ app.whenReady().then(
 			0
 		,	new MenuItem( 
 				{	label		: 'New'
-				,	accelerator	: isMac ? 'Cmd+N' : 'Ctl+N'
+				,	accelerator	: 'CmdOrCtrl+N'
 				,	click		: ev => createWindow()
 				}
 			)
