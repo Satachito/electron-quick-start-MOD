@@ -1,7 +1,7 @@
 {
   "name": "eqsMOD",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "An Electron boilerplate",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
@@ -12,11 +12,12 @@
     "quick",
     "start",
     "tutorial",
-    "demo"
+    "demo",
+    "boilerplate"
   ],
-  "author": "GitHub",
+  "author": "Satoru Ogura",
   "license": "CC0-1.0",
-  "devDependencies": {
-    "electron": "^16.0.5"
+  "dependencies": {
+    "electron": "^17.0.0"
   }
 }
