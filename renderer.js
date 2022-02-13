@@ -1,49 +1,47 @@
-const
-Q = $ => document.querySelector( $ )
+console.log( process )
 
-const
-Log = $ => Q( 'footer' ).textContent = $
-
-MessageBoxB.onclick = () => (
-	Log( 'MessageBox:' )
-,	window.invokeMessageBox(
-		{	type:		MessageBoxType.value
+MessageBoxB.onclick = async () => {
+	const $ = await ipcRenderer.invoke(
+		'messageBox'
+	,	{	type:		MessageBoxType.value
 		,	message:	MessageBoxText.value
 		,	buttons:	JSON.parse( MessageBoxButtons.value )
 		}
-	).then( $ => Log( 'MessageBox: Button #' + $ + ' is Clicked' ) )
-)
+	)
+	console.log( 'MessageBox: Button #' + $ + ' is Clicked' )
+}
 
 ErrorBoxB.onclick = () => (
-	Log( 'ErrorBox:' )
-,	window.sendErrorBox( ErrorBoxTitle.value, ErrorBoxText.value )
+	console.log( 'ErrorBox:' )
+,	ipcRenderer.send( 'errorBox', ErrorBoxTitle.value, ErrorBoxText.value )
 )
 
 AlertB.onclick = () => (
-	Log( 'Alert:' )
-,	window.alert( AlertText.value )
+	console.log( 'Alert:' )
+,	alert( AlertText.value )
 )
 
 SendClipboardB.onclick = () => {
-	window.sendClipboard( ClipboardText.value )
+	ipcRenderer.send( 'clipboard', ClipboardText.value )
 }
 
 InvokeClipboardB.onclick = async () => {
-	ClipboardText.value = await window.invokeClipboard()
+	ClipboardText.value = await ipcRenderer.invoke( 'clipboard' )
 }
 
-window.invokePlatform().then( $ => Log( 'Platform:' + $ ) )
+TextArea.oncontextmenu = () => ipcRenderer.send( 'sampleContextMenu' )
 
-window.onData( ( _, $ ) => Q( 'textarea' ).value = $ )
+onData( ( _, $ ) => TextArea.value = $ )
 
-window.onMenu(
+onMenu(
 	( _, $ ) => {
+		console.log( $ )
 		switch ( $ ) {
 		case 'Save':
-			window.sendSave( Q( 'textarea' ).value )
+			ipcRenderer.send( 'save', TextArea.value )
 			break
 		case 'SaveAs':
-			window.sendSaveAs( Q( 'textarea' ).value )
+			ipcRenderer.send( 'saveAs', TextArea.value )
 			break
 		}
 	}

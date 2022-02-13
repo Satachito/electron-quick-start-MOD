@@ -25,19 +25,70 @@ createWindow = file => {
 		,	title			: file ? file : 'untitled'
 		,	webPreferences	: {
 				preload		: require( 'path' ).join( __dirname, 'preload.js' )
-			,	file
 			}
 		}
 	)
 
 	$.loadFile( 'index.html' )
-	file && $.webContents.on(
-		'did-finish-load'
-	,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ) )
+	file && (
+		$.on(
+			'ready-to-show'
+		,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ) )
+		)
+	,	$.webContents.file = file
 	)
-
 	$.webContents.openDevTools()
 }
+
+const
+SaveAs = ( ev, $ ) => {
+	const _ = dialog.showSaveDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
+	_ && (
+		require( 'fs' ).writeFileSync( _, $ )
+	,	ev.sender.file = _
+	)
+}
+ipcMain.on( 'saveAs', SaveAs )
+ipcMain.on(
+	'save'
+,	( ev, $ ) => {
+		const file = ev.sender.file
+		file
+		?	require( 'fs' ).writeFileSync( file, $ )
+		:	SaveAs( ev, $ )
+	}
+)
+
+ipcMain.on(
+	'clipboard'
+,	( ev, $ ) => clipboard.writeText( $ )
+)
+
+ipcMain.handle(
+	'clipboard'
+,	ev => clipboard.readText()
+)
+
+ipcMain.handle(
+	'messageBox'
+,	( ev, ...$ ) => dialog.showMessageBoxSync( BrowserWindow.getFocusedWindow(), ...$ )
+)
+
+ipcMain.on(
+	'errorBox'
+,	( ev, ...$ ) => dialog.showErrorBox( ...$ )
+)
+
+ipcMain.on(
+	'sampleContextMenu'
+,	( ev, ...$ ) => {
+		var _ = new Menu()
+		_.append( new MenuItem( { label: 'Delete', click: () => ev.sender.send( 'menu', 'Delete' ) } ) )
+		_.append( new MenuItem( { type: 'separator' } ) )
+		_.append( new MenuItem( { label: 'Edit', click: () => ev.sender.send( 'menu', 'Edit' ) } ) )
+		return _.popup()
+	}
+)
 
 
 //app.commandLine.appendSwitch( 'js-flags', '--max-old-space-size=4096' )
@@ -48,7 +99,7 @@ app.whenReady().then(
 
 		app.on(
 			'activate'
-		,	( event, hasVisibleWindows ) => hasVisibleWindows || createWindow()
+		,	( _, hasVisibleWindows ) => hasVisibleWindows || createWindow()
 		)
 		app.on(
 			'window-all-closed'
@@ -62,15 +113,15 @@ app.whenReady().then(
 			,	{ role: 'editmenu'		}
 			,	{ role: 'viewmenu'		}
 			,	{ role: 'windowmenu'	}
-			,	{	label: 'Extra'
+			,	{	label: 'SampleExtraMenu'
 				,	submenu: []
 				}
 			]
 		)
 
 		const
-		extraMenu = menu.items.find( $ => $.label === 'Extra' ).submenu
-		extraMenu.insert( 0, new MenuItem( { label: 'ExtraMenuItem' } ) )
+		extraMenu = menu.items.find( $ => $.label === 'SampleExtraMenu' ).submenu
+		extraMenu.insert( 0, new MenuItem( { label: 'SampleExtraMenuItem' } ) )
 
 		const
 		fileMenu = menu.items.find( $ => $.role === 'filemenu' ).submenu
@@ -116,50 +167,5 @@ app.whenReady().then(
 		)
 		Menu.setApplicationMenu( menu )
 	}
-)
-
-const
-SaveAs = ( ev, $ ) => {
-	const _ = dialog.showSaveDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
-	_ && (
-		require( 'fs' ).writeFileSync( _, $ )
-	,	ev.sender.browserWindowOptions.webPreferences.file = _
-	,	BrowserWindow.getFocusedWindow().title = _
-	)
-}
-ipcMain.on( 'saveAs', SaveAs )
-ipcMain.on(
-	'save'
-,	( ev, $ ) => {
-		const file = ev.sender.browserWindowOptions.webPreferences.file
-		file
-		?	require( 'fs' ).writeFileSync( file, $ )
-		:	SaveAs( ev, $ )
-	}
-)
-
-ipcMain.handle(
-	'platform'
-,	( ev, ...$ ) => process.platform
-)
-
-ipcMain.on(
-	'clipboard'
-,	( ev, $ ) => clipboard.writeText( $ )
-)
-
-ipcMain.handle(
-	'clipboard'
-,	ev => clipboard.readText()
-)
-
-ipcMain.handle(
-	'messageBox'
-,	( ev, ...$ ) => dialog.showMessageBoxSync( BrowserWindow.getFocusedWindow(), ...$ )
-)
-
-ipcMain.on(
-	'errorBox'
-,	( ev, ...$ ) => dialog.showErrorBox( ...$ )
 )
 
