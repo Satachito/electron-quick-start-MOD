@@ -8,14 +8,17 @@
 
 <header>HEADER</header>
 <nav>
+	<input	id=SomeText						value="SOME TEXT"/>
+	<br>
+	<br>
+	<br>
+
 	Invoke dialog.showMessageBoxSync() in Main Process.
 	<br>
 	<select	id=MessageBoxType>
 		<option value=info				>Info	</option>
 		<option value=warning			>Warning</option>
 	</select>
-	<br>
-	<input	id=MessageBoxText				value="MESSAGE BOX TEXT"/>
 	<br>
 	<input	id=MessageBoxButtons			value='[ "OK", "Cancel", "No", "Other" ]' />
 	<br>
@@ -27,21 +30,19 @@
 	<br>
 	<input	id=ErrorBoxTitle				value="ERROR BOX Title"/>
 	<br>
-	<input	id=ErrorBoxText					value="ERROR BOX TEXT"/>
-	<br>
 	<input	id=ErrorBoxB		type=button	value="Click to show error box." />
-	<br>
-	ErrorBox is independent.
 	<br>
 
 	<br>
-	Invoke window.alert() in Renderer Process.
-	<br>
-	<input	id=AlertText					value="ALERT TEXT"/>
+	Invoke alert() in Renderer Process.
 	<br>
 	<input	id=AlertB			type=button	value="Click to show alert." />
 	<br>
-	Alert belong to parent window.
+
+	<br>
+	Invoke confirm() in Renderer Process.
+	<br>
+	<input	id=ConfirmB			type=button	value="Click to show confirm." />
 	<br>
 
 </nav>

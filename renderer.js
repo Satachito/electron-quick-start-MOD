@@ -4,7 +4,7 @@ MessageBoxB.onclick = async () => {
 	const $ = await ipcRenderer.invoke(
 		'messageBox'
 	,	{	type:		MessageBoxType.value
-		,	message:	MessageBoxText.value
+		,	message:	SomeText.value
 		,	buttons:	JSON.parse( MessageBoxButtons.value )
 		}
 	)
@@ -13,13 +13,12 @@ MessageBoxB.onclick = async () => {
 
 ErrorBoxB.onclick = () => (
 	console.log( 'ErrorBox:' )
-,	ipcRenderer.send( 'errorBox', ErrorBoxTitle.value, ErrorBoxText.value )
+,	ipcRenderer.send( 'errorBox', ErrorBoxTitle.value, SomeText.value )
 )
 
-AlertB.onclick = () => (
-	console.log( 'Alert:' )
-,	alert( AlertText.value )
-)
+AlertB.onclick = () => console.log( 'Alert:', alert( SomeText.value ) )
+
+ConfirmB.onclick = () => console.log( 'Confirm:', confirm( SomeText.value ) )
 
 SendClipboardB.onclick = () => {
 	ipcRenderer.send( 'clipboard', ClipboardText.value )
@@ -44,16 +43,14 @@ onData(
 
 onMenu(
 	async ( _, $ ) => {
-		console.log( $ )
 
 		const
 		_Save = async _ => {
-			const $ = await ipcRenderer.invoke( _, TextArea.value )
-			$ 
-			?	(	originalData = TextArea.value
-				,	document.title = $
-				)
-			:	console.log( 'Save canceled' )
+			const file = await ipcRenderer.invoke( _, TextArea.value )
+			file && (
+				prevData = TextArea.value
+			,	document.title = file
+			)
 		}
 
 		switch ( $ ) {
@@ -68,9 +65,6 @@ onMenu(
 )
 
 onbeforeunload = ev => TextArea.value != prevData
-?	(	ev.preventDefault()
-	,	ev.returnValue = ''	// for Chrome/Electron
-	,	console.log( 'DIRTY' )
-	)
+?	ev.returnValue = ''	// for Chrome/Electron
 :	undefined
 
