@@ -42,7 +42,7 @@ onData(
 )
 
 onMenu(
-	async ( _, $ ) => {
+	( _, $ ) => {
 
 		const
 		_Save = async _ => {
