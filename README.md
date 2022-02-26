@@ -8,6 +8,7 @@ This is a modification of Electron's electron-quick-start repository which inclu
 * Dialog handling
 * Access to process module
 * IPC
+* argv parsing
 
 ```
 % wc *.css *.html *.js
