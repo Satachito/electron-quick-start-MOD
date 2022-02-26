@@ -11,7 +11,7 @@ const
 SendMenu = ( ...$ ) => Send( 'menu', ...$ )
 
 const
-createWindow = file => {
+CreateWindow = file => {
 
 	const 
 	$ = new BrowserWindow(
@@ -43,6 +43,12 @@ createWindow = file => {
 			}
 		) === 0 && ev.preventDefault()
 	)
+}
+
+const
+Open = () => {
+	const _ = dialog.showOpenDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
+	_ && _.forEach( $ => CreateWindow( $ ) )
 }
 
 const
@@ -106,20 +112,29 @@ ipcMain.on(
 const
 isMac = process.platform === 'darwin'
 
+app.on(
+	'window-all-closed'
+,	() => isMac || app.quit()
+)
+
+//v	macOS specific
+app.on(
+	'activate'
+,	( event, hasVisibleWindows ) => hasVisibleWindows || CreateWindow()
+)
+app.on(
+	'open-file'
+,	( ev, _ ) => (
+		ev.preventDefault()
+	,	CreateWindow( _ )
+	)
+)
+//^	macOS specific
+
+
 //app.commandLine.appendSwitch( 'js-flags', '--max-old-space-size=4096' )
 app.whenReady().then(
 	() => {
-
-		createWindow()
-
-		app.on(
-			'activate'
-		,	( _, hasVisibleWindows ) => hasVisibleWindows || createWindow()
-		)
-		app.on(
-			'window-all-closed'
-		,	() => isMac || app.quit()
-		)
 
 		const
 		menu = Menu.buildFromTemplate(
@@ -164,10 +179,7 @@ app.whenReady().then(
 		,	new MenuItem( 
 				{	label		: 'Open...'
 				,	accelerator	: 'CmdOrCtrl+O'
-				,	click		: ev => {
-						const _ = dialog.showOpenDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
-						_ && _.forEach( $ => createWindow( $ ) )
-					}
+				,	click		: Open
 				}
 			)
 		)
@@ -176,11 +188,30 @@ app.whenReady().then(
 		,	new MenuItem( 
 				{	label		: 'New'
 				,	accelerator	: 'CmdOrCtrl+N'
-				,	click		: ev => createWindow()
+				,	click		: ev => CreateWindow()
 				}
 			)
 		)
 		Menu.setApplicationMenu( menu )
+
+//dialog.showErrorBox( 'ARGV', JSON.stringify( process.argv ) )
+
+		const _ = process.argv.slice(
+			isMac
+			?	process.argv[ 0 ].split( '/' ).pop()	=== 'Electron'		? 2 : 1
+			:	process.argv[ 0 ].split( '\\' ).pop()	=== 'electron.exe'	? 2 : 1
+		)
+		if ( _.length ) _.forEach( _ => CreateWindow( _ ) )
+		else {
+			switch ( dialog.showMessageBoxSync( { buttons: [ 'Create New', 'Open Dialog' ] } ) ) {
+			case 0:
+				CreateWindow()
+				break
+			case 1:
+				Open()
+				break
+			}
+		}
 	}
 )
 
