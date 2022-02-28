@@ -45,13 +45,12 @@ onMenu(
 	( _, $ ) => {
 
 		const
-		_Save = async _ => {
-			const file = await ipcRenderer.invoke( _, TextArea.value )
-			file && (
+		_Save = _ => ipcRenderer.invoke( _, TextArea.value ).then(
+			file => file && (
 				prevData = TextArea.value
 			,	document.title = file
 			)
-		}
+		)
 
 		switch ( $ ) {
 		case 'Save':

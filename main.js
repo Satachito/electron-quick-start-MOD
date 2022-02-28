@@ -120,7 +120,7 @@ app.on(
 //v	macOS specific
 app.on(
 	'activate'
-,	( event, hasVisibleWindows ) => hasVisibleWindows || CreateWindow()
+,	( _, hasVisibleWindows ) => hasVisibleWindows || CreateWindow()
 )
 app.on(
 	'open-file'
