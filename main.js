@@ -144,7 +144,16 @@ app.whenReady().then(
 			,	{ role: 'viewmenu'		}
 			,	{ role: 'windowmenu'	}
 			,	{	label: 'SampleExtraMenu'
-				,	submenu: []
+				,	submenu: [
+						{	label		: 'x1.1'
+						,	accelerator : 'CmdOrCtrl+;'
+						,	click		: () => SendMenu( 'x1.1' )
+						}
+					,	{	label		: 'x2.0'
+						,	accelerator : 'Shift+CmdOrCtrl+;'
+						,	click		: () => SendMenu( 'x2.0' )
+						}
+					]
 				}
 			]
 		)
