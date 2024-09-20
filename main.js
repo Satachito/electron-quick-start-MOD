@@ -212,7 +212,13 @@ app.whenReady().then(
 		)
 		if ( _.length ) _.forEach( _ => CreateWindow( _ ) )
 		else {
-			switch ( dialog.showMessageBoxSync( { buttons: [ 'Create New', 'Open Dialog' ] } ) ) {
+			switch (
+				dialog.showMessageBoxSync(
+					{	message	: 'electron-quick-start-MOD'
+					,	buttons	: [ 'Create New', 'Open Dialog' ]
+					}
+				)
+			) {
 			case 0:
 				CreateWindow()
 				break
