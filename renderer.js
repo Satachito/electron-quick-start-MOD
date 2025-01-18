@@ -1,7 +1,7 @@
-console.log( process )
+console.log( main.process )
 
 MessageBoxB.onclick = async () => {
-	const $ = await ipcRenderer.invoke(
+	const $ = await main.invoke(
 		'messageBox'
 	,	{	type:		MessageBoxType.value
 		,	message:	SomeText.value
@@ -13,7 +13,7 @@ MessageBoxB.onclick = async () => {
 
 ErrorBoxB.onclick = () => (
 	console.log( 'ErrorBox:' )
-,	ipcRenderer.send( 'errorBox', ErrorBoxTitle.value, SomeText.value )
+,	main.send( 'errorBox', ErrorBoxTitle.value, SomeText.value )
 )
 
 AlertB.onclick = () => console.log( 'Alert:', alert( SomeText.value ) )
@@ -21,19 +21,19 @@ AlertB.onclick = () => console.log( 'Alert:', alert( SomeText.value ) )
 ConfirmB.onclick = () => console.log( 'Confirm:', confirm( SomeText.value ) )
 
 SendClipboardB.onclick = () => {
-	ipcRenderer.send( 'clipboard', ClipboardText.value )
+	main.send( 'clipboard', ClipboardText.value )
 }
 
 InvokeClipboardB.onclick = async () => {
-	ClipboardText.value = await ipcRenderer.invoke( 'clipboard' )
+	ClipboardText.value = await main.invoke( 'clipboard' )
 }
 
-TextArea.oncontextmenu = () => ipcRenderer.send( 'sampleContextMenu' )
+TextArea.oncontextmenu = () => main.send( 'sampleContextMenu' )
 
 let
 prevData = TextArea.value
 
-onData(
+main.onData(
 	( _, $, file ) => (
 		prevData = $
 	,	TextArea.value = $
@@ -41,11 +41,11 @@ onData(
 	)
 )
 
-onMenu(
+main.onMenu(
 	( _, $ ) => {
 
 		const
-		_Save = _ => ipcRenderer.invoke( _, TextArea.value ).then(
+		_Save = _ => main.invoke( _, TextArea.value ).then(
 			file => file && (
 				prevData = TextArea.value
 			,	document.title = file
@@ -63,7 +63,9 @@ onMenu(
 	}
 )
 
-onbeforeunload = ev => TextArea.value != prevData
-?	ev.returnValue = ''	// for Chrome/Electron
-:	undefined
+onbeforeunload = ev => TextArea.value != prevData && (
+		ev.preventDefault()		//	Backward compatibility
+	,	ev.returnValue = ''		//	for Chrome/Electron
+)
+
 

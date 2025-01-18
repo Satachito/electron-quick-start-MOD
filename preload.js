@@ -1,22 +1,15 @@
 const { contextBridge, ipcRenderer } = require( 'electron' )
 
 contextBridge.exposeInMainWorld(
-	'ipcRenderer'
-,	ipcRenderer
-)
+	'main', {
 
-contextBridge.exposeInMainWorld(
-	'onData'
-,   $ => ipcRenderer.on( 'data', $ )
-)
+		process	: JSON.parse( JSON.stringify( process ) )
 
-contextBridge.exposeInMainWorld(
-	'onMenu'
-,   $ => ipcRenderer.on( 'menu', $ )
+	,	onData	: _ => ipcRenderer.on( 'data', _ )
+	,	onMenu	: _ => ipcRenderer.on( 'menu', _ )
+	
+	,	send	: ( channel, ...args ) => ipcRenderer.send( channel, ...args )
+	,	invoke	: ( channel, ...args ) => ipcRenderer.invoke( channel, ...args )
+	}
 )
-
-contextBridge.exposeInMainWorld(
-	'process'
-,	JSON.parse( JSON.stringify( process ) )
-)
-
+	

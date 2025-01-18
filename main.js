@@ -1,85 +1,100 @@
 const
-{ app, BrowserWindow, Menu, MenuItem, ipcMain, dialog, clipboard } = require( 'electron' )
+{ app, BrowserWindow, Menu, MenuItem, ipcMain, dialog, clipboard, session } = require( 'electron' )
+const fs = require( 'fs' )
+const path = require( 'path' )
 
 const
-Send = ( ...$ ) => {
-	const _ = BrowserWindow.getFocusedWindow()
-	_ && _.send( ...$ )
+Send = ( ..._ ) => {
+	const $ = BrowserWindow.getFocusedWindow()
+	$ && $.webContents.send( ..._ )
 }
 
 const
-SendMenu = ( ...$ ) => Send( 'menu', ...$ )
+SendMenu = ( ..._ ) => Send( 'menu', ..._ )
 
 const
-CreateWindow = file => {
+Message = ( ..._ ) => dialog.showMessageBoxSync( BrowserWindow.getFocusedWindow(), ..._ )
+
+const
+Error = ( ..._ ) => dialog.showErrorBox( ..._ )
+
+
+const
+CreateWindow = _ => {
 
 	const 
 	$ = new BrowserWindow(
 		{	width			: 1600
 		,	height			: 800
 		,	webPreferences	: {
-				preload		: require( 'path' ).join( __dirname, 'preload.js' )
+				preload				: path.join( __dirname, 'preload.js' )
+			,	contextIsolation	: true
+			,	nodeIntegration		: false
 			}
 		}
 	)
 
 	$.loadFile( 'index.html' )
-	file && (
+	_ && (
 		$.webContents.on(
 			'did-finish-load'
-		,	() => $.send( 'data', require( 'fs' ).readFileSync( file, 'utf8' ), file )
+		,	() => $.webContents.send( 'data', fs.readFileSync( _, 'utf8' ), _ )
 		)
-	,	$.webContents.file = file
+	,	$.webContents.file = _
 	)
+
 	$.webContents.openDevTools()
 
 	$.webContents.on(
 		'will-prevent-unload'
-	,	ev => dialog.showMessageBoxSync(
-			$
-		,	{	type: 'question'
-			,	buttons: [ 'Discard change and close', 'No' ]
-			,	message: 'Do you really want to close this window?\nChanges you made may not be saved.'
+	,	ev => Message(
+			{	type: 'question'
+			,	buttons: [ 'Save', `Don't save`, 'Cancel' ]
+			,	message: `Do you want to save the changes you made?`
+			,	title: `Your changes will be lost if you don't save them.`
 			}
 		) === 0 && ev.preventDefault()
 	)
+
+	session.defaultSession.loadExtension(
+		path.join( __dirname, 'metamask-extension', 'dist', 'chrome' )
+	).then( console.log ).catch( console.error )
+	
 }
 
 const
 Open = () => {
-	const _ = dialog.showOpenDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
-	_ && _.forEach( $ => CreateWindow( $ ) )
+	const $ = dialog.showOpenDialogSync( { properties: [ 'openFile', 'openDirectory' ] } )
+	$ && $.forEach( _ => CreateWindow( _ ) )
 }
 
 const
-SaveAs = ( ev, $ ) => {
-	const file = dialog.showSaveDialogSync(
-		{	properties	: [ 'openFile', 'openDirectory' ]
-		,	defaultPath	: ev.sender.file
-		}
+SaveAs = ( ev, _ ) => {
+	const $ = dialog.showSaveDialogSync(
+		{ defaultPath: ev.sender.file }
 	)
-	file && (
-		require( 'fs' ).writeFileSync( file, $ )
-	,	ev.sender.file = file
+	$ && (
+		fs.writeFileSync( $, _ )
+	,	ev.sender.file = $
 	)
-	return file
+	return $
 }
 ipcMain.handle( 'saveAs', SaveAs )
 ipcMain.handle(
 	'save'
-,	( ev, $ ) => {
+,	( ev, _ ) => {
 		const file = ev.sender.file
 		return file
-		?	(	require( 'fs' ).writeFileSync( file, $ )
+		?	(	fs.writeFileSync( file, _ )
 			,	file
 			)
-		:	SaveAs( ev, $ )
+		:	SaveAs( ev, _ )
 	}
 )
 
 ipcMain.on(
 	'clipboard'
-,	( ev, $ ) => clipboard.writeText( $ )
+,	( ev, _ ) => clipboard.writeText( _ )
 )
 
 ipcMain.handle(
@@ -89,14 +104,15 @@ ipcMain.handle(
 
 ipcMain.handle(
 	'messageBox'
-,	( ev, ...$ ) => dialog.showMessageBoxSync( BrowserWindow.getFocusedWindow(), ...$ )
+,	( ev, ..._ ) => Message( ..._ )
 )
 
 ipcMain.on(
 	'errorBox'
-,	( ev, ...$ ) => dialog.showErrorBox( ...$ )
+,	( ev, ..._ ) => Error( ..._ )
 )
 
+/*
 ipcMain.on(
 	'sampleContextMenu'
 ,	( ev, ...$ ) => {
@@ -107,7 +123,7 @@ ipcMain.on(
 		return _.popup()
 	}
 )
-
+*/
 
 const
 isMac = process.platform === 'darwin'
@@ -118,6 +134,7 @@ app.on(
 )
 
 //v	macOS specific
+//	TODO: ChatGPT は　BrowserWindow.getAllWindows().length === 0
 app.on(
 	'activate'
 ,	( _, hasVisibleWindows ) => hasVisibleWindows || CreateWindow()
@@ -205,28 +222,17 @@ app.whenReady().then(
 
 //dialog.showErrorBox( 'ARGV', JSON.stringify( process.argv ) )
 
-		const _ = process.argv.slice(
-			isMac
-			?	process.argv[ 0 ].split( '/' ).pop()	=== 'Electron'		? 2 : 1
-			:	process.argv[ 0 ].split( '\\' ).pop()	=== 'electron.exe'	? 2 : 1
-		)
-		if ( _.length ) _.forEach( _ => CreateWindow( _ ) )
-		else {
-			switch (
-				dialog.showMessageBoxSync(
-					{	message	: 'electron-quick-start-MOD'
-					,	buttons	: [ 'Create New', 'Open Dialog' ]
-					}
-				)
-			) {
-			case 0:
-				CreateWindow()
-				break
-			case 1:
-				Open()
-				break
-			}
-		}
+		const $ = process.argv.slice( process.defaultApp ? 2 : 1 )
+		$.length
+		?	$.forEach( _ => CreateWindow( _ ) )
+		:	Message(
+				{	message	: 'electron-quick-start-MOD'
+				,	buttons	: [ 'Create New', 'Open Dialog' ]
+				}
+			)
+			?	Open()
+			:	CreateWindow()
+		;
 	}
 )
 
