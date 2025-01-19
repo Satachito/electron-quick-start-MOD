@@ -7,9 +7,9 @@ contextBridge.exposeInMainWorld(
 
 	,	onData	: _ => ipcRenderer.on( 'data', _ )
 	,	onMenu	: _ => ipcRenderer.on( 'menu', _ )
-	
+
 	,	send	: ( channel, ...args ) => ipcRenderer.send( channel, ...args )
 	,	invoke	: ( channel, ...args ) => ipcRenderer.invoke( channel, ...args )
 	}
 )
-	
+

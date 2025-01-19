@@ -35,6 +35,8 @@ CreateWindow = _ => {
 	)
 
 	$.loadFile( 'index.html' )
+
+//	FILE
 	_ && (
 		$.webContents.on(
 			'did-finish-load'
@@ -43,24 +45,34 @@ CreateWindow = _ => {
 	,	$.webContents.file = _
 	)
 
-	$.webContents.openDevTools()
-
+	$.webContents.status = {}
 	$.webContents.on(
 		'will-prevent-unload'
-	,	ev => Message(
-			{	type: 'question'
-			,	buttons: [ 'Save', `Don't save`, 'Cancel' ]
-			,	message: `Do you want to save the changes you made?`
-			,	title: `Your changes will be lost if you don't save them.`
+	,	ev => {
+
+			if ( $.webContents.status.isDirty ?? false ) {
+				switch ( 
+					Message(
+						{	type	: 'question'
+						,	buttons	: [ 'Save', `Don't save`, 'Cancel' ]
+						,	message	: `Do you want to save the changes you made?`
+						,	title	: `Your changes will be lost if you don't save them.`
+						}
+					)
+				) {
+				case 0: $.webContents.send( 'menu', 'Save' )
+				case 1: ev.preventDefault()
+				}
+			} else {
+				ev.preventDefault()
 			}
-		) === 0 && ev.preventDefault()
+		}
 	)
 
-	session.defaultSession.loadExtension(
-		path.join( __dirname, 'metamask-extension', 'dist', 'chrome' )
-	).then( console.log ).catch( console.error )
-	
+	$.webContents.openDevTools()
 }
+
+
 
 const
 Open = () => {
@@ -71,25 +83,27 @@ Open = () => {
 const
 SaveAs = ( ev, _ ) => {
 	const $ = dialog.showSaveDialogSync(
-		{ defaultPath: ev.sender.file }
+		ev.sender.file ? { defaultPath: ev.sender.file } : {}
 	)
 	$ && (
 		fs.writeFileSync( $, _ )
 	,	ev.sender.file = $
 	)
-	return $
 }
-ipcMain.handle( 'saveAs', SaveAs )
+
+const
+Save = ( ev, _ ) => ev.sender.file
+?	fs.writeFileSync( ev.sender.file, _ )
+:	SaveAs( ev, _ )
+
+ipcMain.handle(
+	'saveAs'
+,	SaveAs
+)
+
 ipcMain.handle(
 	'save'
-,	( ev, _ ) => {
-		const file = ev.sender.file
-		return file
-		?	(	fs.writeFileSync( file, _ )
-			,	file
-			)
-		:	SaveAs( ev, _ )
-	}
+,	Save
 )
 
 ipcMain.on(
@@ -112,18 +126,21 @@ ipcMain.on(
 ,	( ev, ..._ ) => Error( ..._ )
 )
 
-/*
 ipcMain.on(
 	'sampleContextMenu'
-,	( ev, ...$ ) => {
-		var _ = new Menu()
-		_.append( new MenuItem( { label: 'Delete', click: () => ev.sender.send( 'menu', 'Delete' ) } ) )
-		_.append( new MenuItem( { type: 'separator' } ) )
-		_.append( new MenuItem( { label: 'Edit', click: () => ev.sender.send( 'menu', 'Edit' ) } ) )
-		return _.popup()
+,	( ev, ..._ ) => {
+		var $ = new Menu()
+		$.append( new MenuItem( { label: 'MI1', click: () => SendMenu( 'MI1' ) } ) )
+		$.append( new MenuItem( { type: 'separator'	} ) )
+		$.append( new MenuItem( { label: 'MI2', click: () => SendMenu( 'MI2' ) } ) )
+		$.popup()
 	}
 )
-*/
+
+ipcMain.on(
+	'status'
+,	( ev, _ ) => ev.sender.status = _
+)
 
 const
 isMac = process.platform === 'darwin'
